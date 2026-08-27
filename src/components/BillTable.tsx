@@ -74,18 +74,35 @@ export function BillTable({ entries, showSplit, defaultSplitBarbara, onChange, o
               </td>
               {showSplit && (
                 <td className="px-3 py-2">
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={e.splitBarbara ?? defaultSplitBarbara}
-                    onChange={(ev) => onChange(e.id, { splitBarbara: Number(ev.target.value) })}
-                    className="w-16 rounded border border-transparent bg-transparent px-1 py-0.5 hover:border-slate-200 focus:border-slate-300 focus:outline-none"
-                  />
-                  <span className="text-xs text-slate-400"> / {100 - (e.splitBarbara ?? defaultSplitBarbara)} Gabriel</span>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={e.splitBarbara ?? defaultSplitBarbara}
+                      onChange={(ev) => {
+                        const val = Math.min(100, Math.max(0, Number(ev.target.value)));
+                        onChange(e.id, { splitBarbara: val });
+                      }}
+                      className="w-14 rounded border border-transparent bg-transparent px-1 py-0.5 hover:border-slate-200 focus:border-slate-300 focus:outline-none"
+                    />
+                    <span className="text-xs text-slate-400">Bá /</span>
+                    <span className="w-10 text-right text-xs font-medium text-slate-600">
+                      {100 - (e.splitBarbara ?? defaultSplitBarbara)}
+                    </span>
+                    <span className="text-xs text-slate-400">Ga</span>
+                  </div>
                 </td>
               )}
-              <td className="px-3 py-2 text-slate-500">{e.installmentLabel ?? '-'}</td>
+              <td className="px-3 py-2">
+                <input
+                  type="text"
+                  value={e.installmentLabel ?? ''}
+                  placeholder="-"
+                  onChange={(ev) => onChange(e.id, { installmentLabel: ev.target.value || undefined })}
+                  className="w-16 rounded border border-transparent bg-transparent px-1 py-0.5 text-slate-500 hover:border-slate-200 focus:border-slate-300 focus:outline-none"
+                />
+              </td>
               <td className="px-3 py-2">
                 <input
                   type="text"
