@@ -25,7 +25,12 @@ export function BillTable({ entries, showSplit, defaultSplitBarbara, onChange, o
             <th className="px-3 py-2 font-medium">Conta</th>
             <th className="px-3 py-2 font-medium">Valor</th>
             <th className="px-3 py-2 font-medium">Vencimento</th>
-            {showSplit && <th className="px-3 py-2 font-medium">% Bárbara</th>}
+            {showSplit && (
+              <>
+                <th className="px-3 py-2 font-medium">% Bárbara</th>
+                <th className="px-3 py-2 font-medium">% Gabriel</th>
+              </>
+            )}
             <th className="px-3 py-2 font-medium">Parcela</th>
             <th className="px-3 py-2 font-medium">Obs.</th>
             <th className="px-3 py-2"></th>
@@ -73,8 +78,8 @@ export function BillTable({ entries, showSplit, defaultSplitBarbara, onChange, o
                 />
               </td>
               {showSplit && (
-                <td className="px-3 py-2">
-                  <div className="flex items-center gap-1">
+                <>
+                  <td className="px-3 py-2">
                     <input
                       type="number"
                       min={0}
@@ -86,13 +91,11 @@ export function BillTable({ entries, showSplit, defaultSplitBarbara, onChange, o
                       }}
                       className="w-14 rounded border border-transparent bg-transparent px-1 py-0.5 hover:border-slate-200 focus:border-slate-300 focus:outline-none"
                     />
-                    <span className="text-xs text-slate-400">Bá /</span>
-                    <span className="w-10 text-right text-xs font-medium text-slate-600">
-                      {100 - (e.splitBarbara ?? defaultSplitBarbara)}
-                    </span>
-                    <span className="text-xs text-slate-400">Ga</span>
-                  </div>
-                </td>
+                  </td>
+                  <td className="px-3 py-2 text-slate-600">
+                    {100 - (e.splitBarbara ?? defaultSplitBarbara)}
+                  </td>
+                </>
               )}
               <td className="px-3 py-2">
                 <input
@@ -124,7 +127,7 @@ export function BillTable({ entries, showSplit, defaultSplitBarbara, onChange, o
           ))}
           {sorted.length === 0 && (
             <tr>
-              <td colSpan={showSplit ? 8 : 7} className="px-3 py-6 text-center text-slate-400">
+              <td colSpan={showSplit ? 9 : 7} className="px-3 py-6 text-center text-slate-400">
                 Nenhuma conta neste mês ainda.
               </td>
             </tr>
@@ -136,7 +139,7 @@ export function BillTable({ entries, showSplit, defaultSplitBarbara, onChange, o
               Total
             </td>
             <td className="px-3 py-2">{formatCurrency(total)}</td>
-            <td className="px-3 py-2 text-xs font-normal text-slate-500" colSpan={showSplit ? 4 : 3}>
+            <td className="px-3 py-2 text-xs font-normal text-slate-500" colSpan={showSplit ? 5 : 3}>
               Pago: {formatCurrency(paid)} · Pendente: {formatCurrency(total - paid)}
             </td>
             <td></td>
