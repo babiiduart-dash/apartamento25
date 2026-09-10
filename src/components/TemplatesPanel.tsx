@@ -14,6 +14,7 @@ const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', '
 
 export function TemplatesPanel({ templates, category, defaultSplitBarbara, onChange, onDelete, onAdd }: Props) {
   const showSplit = category === 'casa';
+  const showInstallments = category !== 'casa';
 
   return (
     <div className="space-y-3">
@@ -31,7 +32,7 @@ export function TemplatesPanel({ templates, category, defaultSplitBarbara, onCha
               <th className="px-3 py-2 font-medium">Valor padrão</th>
               <th className="px-3 py-2 font-medium">Vencimento</th>
               <th className="px-3 py-2 font-medium">Frequência</th>
-              <th className="px-3 py-2 font-medium">Parcelas</th>
+              {showInstallments && <th className="px-3 py-2 font-medium">Parcelas</th>}
               {showSplit && <th className="px-3 py-2 font-medium">% Bárbara</th>}
               <th className="px-3 py-2 font-medium">A partir de</th>
               <th className="px-3 py-2 font-medium">Obs.</th>
@@ -102,53 +103,55 @@ export function TemplatesPanel({ templates, category, defaultSplitBarbara, onCha
                     </select>
                   )}
                 </td>
-                <td className="px-3 py-2">
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="checkbox"
-                      checked={!!t.installments}
-                      onChange={(ev) => {
-                        if (ev.target.checked) {
-                          onChange(t.id, {
-                            installments: { total: t.installments?.total ?? 2, firstMonth: t.installments?.firstMonth ?? t.startMonth },
-                          });
-                        } else {
-                          onChange(t.id, { installments: undefined });
-                        }
-                      }}
-                      className="h-4 w-4 accent-emerald-600"
-                      title="Conta parcelada"
-                    />
-                    {t.installments ? (
-                      <>
-                        <input
-                          type="number"
-                          min={1}
-                          value={t.installments.total}
-                          onChange={(ev) =>
+                {showInstallments && (
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="checkbox"
+                        checked={!!t.installments}
+                        onChange={(ev) => {
+                          if (ev.target.checked) {
                             onChange(t.id, {
-                              installments: { ...t.installments!, total: Math.max(1, Number(ev.target.value)) },
-                            })
+                              installments: { total: t.installments?.total ?? 2, firstMonth: t.installments?.firstMonth ?? t.startMonth },
+                            });
+                          } else {
+                            onChange(t.id, { installments: undefined });
                           }
-                          className="w-12 rounded border border-slate-200 bg-white px-1 py-0.5 text-xs"
-                          title="Total de parcelas"
-                        />
-                        <span className="text-xs text-slate-400">x /</span>
-                        <input
-                          type="month"
-                          value={t.installments.firstMonth}
-                          onChange={(ev) =>
-                            onChange(t.id, { installments: { ...t.installments!, firstMonth: ev.target.value } })
-                          }
-                          className="rounded border border-slate-200 bg-white px-1 py-0.5 text-xs"
-                          title="Mês da 1ª parcela"
-                        />
-                      </>
-                    ) : (
-                      <span className="text-xs text-slate-400">-</span>
-                    )}
-                  </div>
-                </td>
+                        }}
+                        className="h-4 w-4 accent-emerald-600"
+                        title="Conta parcelada"
+                      />
+                      {t.installments ? (
+                        <>
+                          <input
+                            type="number"
+                            min={1}
+                            value={t.installments.total}
+                            onChange={(ev) =>
+                              onChange(t.id, {
+                                installments: { ...t.installments!, total: Math.max(1, Number(ev.target.value)) },
+                              })
+                            }
+                            className="w-12 rounded border border-slate-200 bg-white px-1 py-0.5 text-xs"
+                            title="Total de parcelas"
+                          />
+                          <span className="text-xs text-slate-400">x /</span>
+                          <input
+                            type="month"
+                            value={t.installments.firstMonth}
+                            onChange={(ev) =>
+                              onChange(t.id, { installments: { ...t.installments!, firstMonth: ev.target.value } })
+                            }
+                            className="rounded border border-slate-200 bg-white px-1 py-0.5 text-xs"
+                            title="Mês da 1ª parcela"
+                          />
+                        </>
+                      ) : (
+                        <span className="text-xs text-slate-400">-</span>
+                      )}
+                    </div>
+                  </td>
+                )}
                 {showSplit && (
                   <td className="px-3 py-2">
                     <input
@@ -186,7 +189,10 @@ export function TemplatesPanel({ templates, category, defaultSplitBarbara, onCha
             ))}
             {templates.length === 0 && (
               <tr>
-                <td colSpan={showSplit ? 10 : 9} className="px-3 py-6 text-center text-slate-400">
+                <td
+                  colSpan={8 + (showSplit ? 1 : 0) + (showInstallments ? 1 : 0)}
+                  className="px-3 py-6 text-center text-slate-400"
+                >
                   Nenhuma conta recorrente cadastrada.
                 </td>
               </tr>
@@ -194,7 +200,7 @@ export function TemplatesPanel({ templates, category, defaultSplitBarbara, onCha
           </tbody>
           <tfoot>
             <tr className="border-t border-slate-200 bg-slate-50 text-xs text-slate-500">
-              <td colSpan={showSplit ? 10 : 9} className="px-3 py-2">
+              <td colSpan={8 + (showSplit ? 1 : 0) + (showInstallments ? 1 : 0)} className="px-3 py-2">
                 Total mensal recorrente:{' '}
                 {formatCurrency(
                   templates.filter((t) => t.active && t.frequency === 'monthly').reduce((s, t) => s + t.amount, 0)
