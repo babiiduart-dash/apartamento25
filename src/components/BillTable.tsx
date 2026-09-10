@@ -21,6 +21,7 @@ export function BillTable({ entries, category, showSplit, defaultSplitBarbara, o
   const sorted = [...entries].sort((a, b) => (a.dueDay ?? 99) - (b.dueDay ?? 99));
   const total = entries.reduce((s, e) => s + e.amount, 0);
   const paid = entries.filter((e) => e.paid).reduce((s, e) => s + e.amount, 0);
+  const totalCols = 6 + (showSplit ? 2 : 0) + (showInstallmentToggle ? 1 : 0);
 
   return (
     <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -37,7 +38,7 @@ export function BillTable({ entries, category, showSplit, defaultSplitBarbara, o
                 <th className="px-3 py-2 font-medium">% Gabriel</th>
               </>
             )}
-            <th className="px-3 py-2 font-medium">Parcela</th>
+            {showInstallmentToggle && <th className="px-3 py-2 font-medium">Parcela</th>}
             <th className="px-3 py-2 font-medium">Obs.</th>
             <th className="px-3 py-2"></th>
           </tr>
@@ -103,11 +104,11 @@ export function BillTable({ entries, category, showSplit, defaultSplitBarbara, o
                   </td>
                 </>
               )}
-              <td className="px-3 py-2">
-                {showInstallmentToggle ? (
-                  (() => {
-                    const inst = parseInstallment(e.installmentLabel);
-                    return (
+              {showInstallmentToggle &&
+                (() => {
+                  const inst = parseInstallment(e.installmentLabel);
+                  return (
+                    <td className="px-3 py-2">
                       <div className="flex items-center gap-1">
                         <input
                           type="checkbox"
@@ -154,18 +155,9 @@ export function BillTable({ entries, category, showSplit, defaultSplitBarbara, o
                           <span className="text-xs text-slate-400">-</span>
                         )}
                       </div>
-                    );
-                  })()
-                ) : (
-                  <input
-                    type="text"
-                    value={e.installmentLabel ?? ''}
-                    placeholder="-"
-                    onChange={(ev) => onChange(e.id, { installmentLabel: ev.target.value || undefined })}
-                    className="w-16 rounded border border-transparent bg-transparent px-1 py-0.5 text-slate-500 hover:border-slate-200 focus:border-slate-300 focus:outline-none"
-                  />
-                )}
-              </td>
+                    </td>
+                  );
+                })()}
               <td className="px-3 py-2">
                 <input
                   type="text"
@@ -187,7 +179,7 @@ export function BillTable({ entries, category, showSplit, defaultSplitBarbara, o
           ))}
           {sorted.length === 0 && (
             <tr>
-              <td colSpan={showSplit ? 9 : 7} className="px-3 py-6 text-center text-slate-400">
+              <td colSpan={totalCols} className="px-3 py-6 text-center text-slate-400">
                 Nenhuma conta neste mês ainda.
               </td>
             </tr>
@@ -199,7 +191,7 @@ export function BillTable({ entries, category, showSplit, defaultSplitBarbara, o
               Total
             </td>
             <td className="px-3 py-2">{formatCurrency(total)}</td>
-            <td className="px-3 py-2 text-xs font-normal text-slate-500" colSpan={showSplit ? 5 : 3}>
+            <td className="px-3 py-2 text-xs font-normal text-slate-500" colSpan={totalCols - 4}>
               Pago: {formatCurrency(paid)} · Pendente: {formatCurrency(total - paid)}
             </td>
             <td></td>
