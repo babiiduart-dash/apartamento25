@@ -11,7 +11,13 @@ interface Props {
   onAdd: () => void;
 }
 
-export function BillTable({ entries, showSplit, defaultSplitBarbara, onChange, onDelete, onAdd }: Props) {
+function parseInstallment(label?: string): { cur: number; total: number } | null {
+  const m = label?.match(/^(\d+)\s*\/\s*(\d+)$/);
+  return m ? { cur: Number(m[1]), total: Number(m[2]) } : null;
+}
+
+export function BillTable({ entries, category, showSplit, defaultSplitBarbara, onChange, onDelete, onAdd }: Props) {
+  const showInstallmentToggle = category !== 'casa';
   const sorted = [...entries].sort((a, b) => (a.dueDay ?? 99) - (b.dueDay ?? 99));
   const total = entries.reduce((s, e) => s + e.amount, 0);
   const paid = entries.filter((e) => e.paid).reduce((s, e) => s + e.amount, 0);
@@ -98,13 +104,67 @@ export function BillTable({ entries, showSplit, defaultSplitBarbara, onChange, o
                 </>
               )}
               <td className="px-3 py-2">
-                <input
-                  type="text"
-                  value={e.installmentLabel ?? ''}
-                  placeholder="-"
-                  onChange={(ev) => onChange(e.id, { installmentLabel: ev.target.value || undefined })}
-                  className="w-16 rounded border border-transparent bg-transparent px-1 py-0.5 text-slate-500 hover:border-slate-200 focus:border-slate-300 focus:outline-none"
-                />
+                {showInstallmentToggle ? (
+                  (() => {
+                    const inst = parseInstallment(e.installmentLabel);
+                    return (
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="checkbox"
+                          checked={!!inst}
+                          onChange={(ev) => {
+                            if (ev.target.checked) {
+                              onChange(e.id, { installmentLabel: '1/2' });
+                            } else {
+                              onChange(e.id, { installmentLabel: undefined });
+                            }
+                          }}
+                          className="h-4 w-4 accent-emerald-600"
+                          title="Conta parcelada"
+                        />
+                        {inst ? (
+                          <>
+                            <input
+                              type="number"
+                              min={1}
+                              value={inst.cur}
+                              onChange={(ev) =>
+                                onChange(e.id, {
+                                  installmentLabel: `${Math.max(1, Number(ev.target.value))}/${inst.total}`,
+                                })
+                              }
+                              className="w-10 rounded border border-slate-200 bg-white px-1 py-0.5 text-xs text-right"
+                              title="Parcela atual"
+                            />
+                            <span className="text-xs text-slate-400">/</span>
+                            <input
+                              type="number"
+                              min={1}
+                              value={inst.total}
+                              onChange={(ev) =>
+                                onChange(e.id, {
+                                  installmentLabel: `${inst.cur}/${Math.max(1, Number(ev.target.value))}`,
+                                })
+                              }
+                              className="w-10 rounded border border-slate-200 bg-white px-1 py-0.5 text-xs"
+                              title="Total de parcelas"
+                            />
+                          </>
+                        ) : (
+                          <span className="text-xs text-slate-400">-</span>
+                        )}
+                      </div>
+                    );
+                  })()
+                ) : (
+                  <input
+                    type="text"
+                    value={e.installmentLabel ?? ''}
+                    placeholder="-"
+                    onChange={(ev) => onChange(e.id, { installmentLabel: ev.target.value || undefined })}
+                    className="w-16 rounded border border-transparent bg-transparent px-1 py-0.5 text-slate-500 hover:border-slate-200 focus:border-slate-300 focus:outline-none"
+                  />
+                )}
               </td>
               <td className="px-3 py-2">
                 <input
